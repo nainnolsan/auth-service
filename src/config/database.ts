@@ -11,7 +11,7 @@ export const AppDataSource = new DataSource({
   username: config.database.url ? undefined : config.database.username,
   password: config.database.url ? undefined : config.database.password,
   database: config.database.url ? undefined : config.database.database,
-  synchronize: config.nodeEnv === 'development', // Solo en desarrollo
+  synchronize: true, // Crear tablas automáticamente (cambiar a false después del primer deploy)
   logging: config.nodeEnv === 'development',
   entities: [User],
   migrations: ['src/migrations/**/*.ts'],
