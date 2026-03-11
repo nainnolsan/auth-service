@@ -55,10 +55,11 @@ app.use(errorHandler);
 
 // Iniciar servidor
 const PORT = config.port;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Auth Service corriendo en puerto ${PORT}`);
   console.log(`🌍 Entorno: ${config.nodeEnv}`);
   console.log(`🐘 Base de datos: PostgreSQL`);
+  console.log(`🌐 CORS Origin: ${config.cors.origin}`);
 });
 
 export default app;
