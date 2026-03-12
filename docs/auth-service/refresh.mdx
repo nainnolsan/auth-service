@@ -1,0 +1,111 @@
+---
+title: "Refresh Token"
+description: "Renovar el access token usando el refresh token"
+---
+
+## POST /api/auth/refresh
+
+Cuando el **access token expira** (después de 15 minutos), usa este endpoint para obtener uno nuevo sin necesidad de volver a loguearse. Solo necesitas el refresh token.
+
+<Tip>
+  El frontend debería llamar a este endpoint automáticamente cuando reciba un error `401 Token expirado` en cualquier otra llamada a la API.
+</Tip>
+
+## Request Body
+
+<ParamField body="refreshToken" type="string" required>
+  El refresh token obtenido al hacer login o register. Expira en 7 días.
+</ParamField>
+
+## Responses
+
+<ResponseField name="success" type="boolean">
+  Indica si la operación fue exitosa.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Mensaje descriptivo del resultado.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="data">
+    <ResponseField name="accessToken" type="string">
+      Nuevo JWT de acceso con duración de 15 minutos.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Cómo funciona internamente
+
+1. Verifica que el refresh token tiene una firma JWT válida.
+2. Busca al usuario en la base de datos.
+3. Comprueba que el refresh token está en el array `refreshTokens` del usuario (así se detectan tokens robados o ya invalidados por logout).
+4. Si todo es válido, genera y devuelve un nuevo access token.
+
+## Ejemplos
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://tu-auth-service.railway.app/api/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }'
+```
+
+```js JavaScript (fetch)
+const response = await fetch('/api/auth/refresh', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    refreshToken: localStorage.getItem('refreshToken')
+  })
+});
+
+const data = await response.json();
+// Guardar el nuevo accessToken
+localStorage.setItem('accessToken', data.data.accessToken);
+```
+
+</CodeGroup>
+
+<ResponseExample>
+
+```json 200 - Éxito
+{
+  "success": true,
+  "message": "Token refrescado exitosamente",
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+}
+```
+
+```json 403 - Refresh token inválido o ya usado
+{
+  "success": false,
+  "message": "Refresh token inválido"
+}
+```
+
+```json 401 - Refresh token expirado
+{
+  "success": false,
+  "message": "Token expirado"
+}
+```
+
+```json 400 - Falta el refresh token
+{
+  "success": false,
+  "errors": [
+    {
+      "field": "refreshToken",
+      "message": "El refresh token es requerido"
+    }
+  ]
+}
+```
+
+</ResponseExample>

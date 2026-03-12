@@ -1,0 +1,108 @@
+---
+title: "Logout"
+description: "Cerrar sesión e invalidar el refresh token"
+---
+
+## POST /api/auth/logout
+
+Cierra la sesión del usuario invalidando su refresh token. Al removerlo del array `refreshTokens` en la base de datos, ese token ya no podrá usarse para generar nuevos access tokens.
+
+<Note>
+  El access token seguirá siendo técnicamente válido hasta que expire (máximo 15 min). Para mayor seguridad, el frontend debe eliminar ambos tokens del almacenamiento local al hacer logout.
+</Note>
+
+## Request Body
+
+<ParamField body="refreshToken" type="string" required>
+  El refresh token a invalidar.
+</ParamField>
+
+## Responses
+
+<ResponseField name="success" type="boolean">
+  Indica si la operación fue exitosa.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Mensaje descriptivo del resultado.
+</ResponseField>
+
+## Comportamiento
+
+- Si el refresh token es válido y pertenece al usuario → se elimina del array y se devuelve `200`.
+- Si el usuario ya no existe en la BD → la operación se considera exitosa igualmente (el token de todas formas queda inútil).
+- Si el refresh token es inválido o expirado → se devuelve error `401`/`403`.
+
+## Ejemplos
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://tu-auth-service.railway.app/api/auth/logout \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }'
+```
+
+```js JavaScript (fetch)
+const response = await fetch('/api/auth/logout', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    refreshToken: localStorage.getItem('refreshToken')
+  })
+});
+
+// Limpiar tokens del almacenamiento local
+localStorage.removeItem('accessToken');
+localStorage.removeItem('refreshToken');
+```
+
+```graphql GraphQL (via API Gateway)
+mutation Logout {
+  logout(refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...") {
+    success
+    message
+  }
+}
+```
+
+</CodeGroup>
+
+<ResponseExample>
+
+```json 200 - Éxito
+{
+  "success": true,
+  "message": "Logout exitoso"
+}
+```
+
+```json 401 - Refresh token expirado
+{
+  "success": false,
+  "message": "Token expirado"
+}
+```
+
+```json 403 - Refresh token inválido
+{
+  "success": false,
+  "message": "Token inválido"
+}
+```
+
+```json 400 - Falta el refresh token
+{
+  "success": false,
+  "errors": [
+    {
+      "field": "refreshToken",
+      "message": "El refresh token es requerido"
+    }
+  ]
+}
+```
+
+</ResponseExample>

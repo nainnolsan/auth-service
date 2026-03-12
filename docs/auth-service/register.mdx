@@ -1,0 +1,149 @@
+---
+title: "Register"
+description: "Registrar un nuevo usuario en el sistema"
+---
+
+## POST /api/auth/register
+
+Crea una nueva cuenta de usuario. Si el registro es exitoso, devuelve directamente los tokens JWT para que el usuario quede autenticado de inmediato.
+
+## Request Body
+
+<ParamField body="name" type="string" required>
+  Nombre del usuario. Debe tener entre **2 y 50 caracteres**.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  Email del usuario. Debe ser un email válido y **único** en el sistema.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  Contraseña del usuario. Debe tener al menos **6 caracteres**. Se almacena hasheada con bcrypt (salt rounds: 10).
+</ParamField>
+
+## Responses
+
+<ResponseField name="success" type="boolean">
+  Indica si la operación fue exitosa.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Mensaje descriptivo del resultado.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Datos retornados en caso de éxito.
+
+  <Expandable title="data">
+    <ResponseField name="accessToken" type="string">
+      JWT de corta duración (15 min) para autenticar requests.
+    </ResponseField>
+
+    <ResponseField name="refreshToken" type="string">
+      JWT de larga duración (7 días) para renovar el access token.
+    </ResponseField>
+
+    <ResponseField name="user" type="object">
+      Datos públicos del usuario creado.
+
+      <Expandable title="user">
+        <ResponseField name="id" type="string">
+          UUID único del usuario.
+        </ResponseField>
+        <ResponseField name="name" type="string">
+          Nombre del usuario.
+        </ResponseField>
+        <ResponseField name="email" type="string">
+          Email del usuario.
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Ejemplos
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://tu-auth-service.railway.app/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Juan Pérez",
+    "email": "juan@example.com",
+    "password": "mipassword123"
+  }'
+```
+
+```js JavaScript (fetch)
+const response = await fetch('/api/auth/register', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: 'Juan Pérez',
+    email: 'juan@example.com',
+    password: 'mipassword123'
+  })
+});
+
+const data = await response.json();
+```
+
+```graphql GraphQL (via API Gateway)
+mutation Register {
+  register(name: "Juan Pérez", email: "juan@example.com", password: "mipassword123") {
+    accessToken
+    refreshToken
+    user {
+      id
+      name
+      email
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+<ResponseExample>
+
+```json 201 - Éxito
+{
+  "success": true,
+  "message": "Usuario registrado exitosamente",
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Juan Pérez",
+      "email": "juan@example.com"
+    }
+  }
+}
+```
+
+```json 409 - Email ya registrado
+{
+  "success": false,
+  "message": "El email ya está registrado"
+}
+```
+
+```json 400 - Validación fallida
+{
+  "success": false,
+  "errors": [
+    {
+      "field": "email",
+      "message": "Debe proporcionar un email válido"
+    },
+    {
+      "field": "password",
+      "message": "La contraseña debe tener al menos 6 caracteres"
+    }
+  ]
+}
+```
+
+</ResponseExample>

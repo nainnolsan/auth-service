@@ -1,0 +1,52 @@
+---
+title: "Introducción"
+description: "Documentación de la arquitectura de microservicios del portafolio"
+---
+
+## Bienvenido
+
+Esta documentación cubre la API del portafolio, construida con una arquitectura de **microservicios**.
+
+<CardGroup cols={2}>
+  <Card
+    title="Auth Service"
+    icon="lock"
+    href="/auth-service/overview"
+  >
+    REST API para autenticación y gestión de usuarios con JWT y PostgreSQL.
+  </Card>
+  <Card
+    title="API Gateway"
+    icon="server"
+    href="#"
+  >
+    Capa GraphQL que unifica todos los microservicios en un solo punto de entrada.
+  </Card>
+</CardGroup>
+
+## Arquitectura
+
+```
+Frontend (React + Vite)
+       │
+       ▼
+ API Gateway (GraphQL)
+       │
+       ▼
+ Auth Service (REST)
+       │
+       ▼
+  PostgreSQL
+```
+
+El **Frontend** solo habla con el **API Gateway** vía GraphQL. El API Gateway se encarga de comunicarse con los microservicios internos vía REST.
+
+## Stack Tecnológico
+
+| Capa         | Tecnología                          |
+|--------------|-------------------------------------|
+| Frontend     | React, TypeScript, Vite, Apollo     |
+| API Gateway  | Node.js, Apollo Server, GraphQL     |
+| Auth Service | Node.js, Express, TypeORM, JWT      |
+| Base de Datos| PostgreSQL                          |
+| Deploy       | Railway                             |
