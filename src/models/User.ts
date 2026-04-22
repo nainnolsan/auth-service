@@ -18,6 +18,9 @@ export class User {
   @Column({ type: 'text', array: true, default: [] })
   refreshTokens!: string[];
 
+  @Column({ type: 'jsonb', default: [] })
+  scrapingPreferences!: { keyword: string; location: string }[];
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

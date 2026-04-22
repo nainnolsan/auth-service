@@ -6,6 +6,7 @@ import { connectDatabase } from './config/database';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/authRoutes';
 import healthRoutes from './routes/healthRoutes';
+import userRoutes from './routes/userRoutes';
 
 const app: Application = express();
 
@@ -22,6 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Rutas
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api', healthRoutes);
 
 // Ruta de bienvenida
